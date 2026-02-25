@@ -58,7 +58,7 @@ if st.button("CALCULAR DESEMPENHO"):
 
         # --- BOTÃO WHATSAPP ---
         msg = f"Olá! Fiz o diagnóstico da usina {nome}:\n- Eficiência: {eficiencia:.1f}%\n- Perda: R$ {perda_rs:.2f}\n- Status: {status if 'status' in locals() else ''}"
-        url = f"https://wa.me/5561999999999?text={urllib.parse.quote(msg)}" # COLOQUE SEU NUMERO AQUI
+        url = f"https://wa.me/5561982579348?text={urllib.parse.quote(msg)}" # COLOQUE SEU NUMERO AQUI
         
         st.markdown(f'''
             <a href="{url}" target="_blank">
@@ -67,3 +67,4 @@ if st.button("CALCULAR DESEMPENHO"):
                 </button>
             </a>
         ''', unsafe_allow_html=True)
+
