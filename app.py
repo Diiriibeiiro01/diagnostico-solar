@@ -1,57 +1,69 @@
 import streamlit as st
 import urllib.parse
 
-st.set_page_config(page_title="Solar Expert Pro", page_icon="☀️")
+# --- CONFIGURAÇÕES FIXAS (O CLIENTE NÃO MEXE) ---
+TARIFA_FIXA = 0.95  # Altere aqui o valor oficial da sua região
+META_KWH_POR_PLACA = 70 
 
-# --- ESTILO E CABEÇALHO ---
-st.title("☀️ Diagnóstico Solar Profissional")
-st.markdown("---")
+st.set_page_config(page_title="Distrito Solar - Diagnóstico", page_icon="☀️")
 
-# --- ENTRADA DE DADOS ---
-with st.expander("📝 Introduzir Dados da Usina", expanded=True):
-    nome = st.text_input("Nome do Cliente")
-    col1, col2 = st.columns(2)
+# --- ESTILO VISUAL ---
+st.markdown(f"""
+    <style>
+    .stApp {{ background-color: #f4f7f6; }}
+    .status-box {{ padding: 20px; border-radius: 10px; color: white; font-weight: bold; margin-bottom: 20px; }}
+    </style>
+    """, unsafe_allow_html=True)
+
+st.title("☀️ Calculadora de Performance Distrito Solar")
+st.info(f"ℹ️ Parâmetros Oficiais: Tarifa base R$ {TARIFA_FIXA:.2f}/kWh | Meta: {META_KWH_POR_PLACA}kWh mês/placa")
+
+# --- ENTRADA DE DADOS DO CLIENTE ---
+with st.container():
+    st.subheader("📝 Dados da sua Usina")
+    nome = st.text_input("Seu Nome ou Nome da Usina")
+    
+    col1, col2, col3 = st.columns(3)
     with col1:
-        modulos = st.number_input("Nº de Painéis", min_value=1, step=1)
-        geracao_real = st.number_input("Geração Real (kWh)", min_value=0.0)
+        modulos = st.number_input("Qtd de Placas", min_value=1, step=1, help="Número total de painéis instalados.")
     with col2:
-        dias = st.number_input("Período (Dias)", min_value=1, value=30)
-        valor_kwh = st.number_input("Tarifa Energia (R$)", value=0.90)
+        dias = st.number_input("Dias de Uso", min_value=1, value=30, help="Período que você está analisando.")
+    with col3:
+        geracao_real = st.number_input("Geração no Inversor (kWh)", min_value=0.0)
 
-if st.button("GERAR ANÁLISE COMPLETA"):
+if st.button("CALCULAR DESEMPENHO"):
     if not nome:
-        st.error("Por favor, indique o nome.")
+        st.warning("Por favor, digite o seu nome para o relatório.")
     else:
-        # Lógica de cálculo
-        meta = (70 / 30) * modulos * dias
-        eficiencia = (geracao_real / meta) * 100
-        perda_rs = max(0, meta - geracao_real) * valor_kwh
+        # --- CÁLCULO BLINDADO ---
+        meta_periodo = (META_KWH_POR_PLACA / 30) * modulos * dias
+        eficiencia = (geracao_real / meta_periodo) * 100 if meta_periodo > 0 else 0
+        perda_rs = max(0, meta_periodo - geracao_real) * TARIFA_FIXA
+
+        st.markdown("---")
         
-        # Diagnóstico
+        # --- EXIBIÇÃO DE RESULTADOS ---
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Eficiência", f"{eficiencia:.1f}%")
+        c2.metric("Meta Esperada", f"{meta_periodo:.1f} kWh")
+        c3.metric("Economia Perdida", f"R$ {perda_rs:.2f}")
+
+        # --- DIAGNÓSTICO AUTOMÁTICO ---
         if eficiencia >= 90:
-            status, cor, msg = "EXCELENTE", "green", "Sistema operando perfeitamente."
+            st.success(f"### Status: ✅ EXCELENTE\nSua usina está operando perfeitamente, {nome}!")
         elif eficiencia >= 80:
-            status, cor, msg = "ALERTA (SUJEIRA/CLIMA)", "orange", "Perda moderada. Provável necessidade de limpeza."
+            st.warning(f"### Status: 🚨 ALERTA (Sujeira ou Tempo)\nSua usina perdeu {(100-eficiencia):.1f}% de eficiência. Recomendamos uma limpeza nos painéis.")
         else:
-            status, cor, msg = "CRÍTICO (FALHA TÉCNICA)", "red", "Perda grave! Verifique inversor e disjuntores."
+            st.error(f"### Status: 💀 CRÍTICO (Falha Técnica)\nAtenção! Perda grave detectada. Pode haver falha no inversor ou disjuntor desligado.")
 
-        # Exibição Visual
-        st.subheader(f"📊 Resultado: {status}")
-        st.metric("Eficiência", f"{eficiencia:.1f}%", delta=f"{eficiencia-100:.1f}%")
+        # --- BOTÃO WHATSAPP ---
+        msg = f"Olá! Fiz o diagnóstico da usina {nome}:\n- Eficiência: {eficiencia:.1f}%\n- Perda: R$ {perda_rs:.2f}\n- Status: {status if 'status' in locals() else ''}"
+        url = f"https://wa.me/5561999999999?text={urllib.parse.quote(msg)}" # COLOQUE SEU NUMERO AQUI
         
-        st.write(f"**Análise técnica:** {msg}")
-        st.write(f"**Prejuízo financeiro no período:** R$ {perda_rs:.2f}")
-
-        # --- FUNÇÃO WHATSAPP ---
-        texto_whats = f"Olá! Fiz o diagnóstico da usina {nome}:\nStatus: {status}\nEficiência: {eficiencia:.1f}%\nPrejuízo: R${perda_rs:.2f}\nPreciso de suporte técnico."
-        texto_url = urllib.parse.quote(texto_whats)
-        # Substitua o número abaixo pelo SEU número de telemóvel
-        link_whats = f"https://wa.me/5561982579348?text={texto_url}"
-        
-        st.markdown(f"""
-            <a href="{link_whats}" target="_blank">
-                <button style="width:100%; background-color:#25D366; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">
-                    💬 Enviar Resultado para Suporte Técnico
+        st.markdown(f'''
+            <a href="{url}" target="_blank">
+                <button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">
+                    💬 ENVIAR RESULTADO PARA SUPORTE TÉCNICO
                 </button>
             </a>
-            """, unsafe_allow_html=True)
+        ''', unsafe_allow_html=True)
