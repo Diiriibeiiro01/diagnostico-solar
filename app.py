@@ -59,7 +59,7 @@ st.markdown("""
 st.markdown(f"""
     <div class="header-container">
         <h1>Nova Distrito</h1>
-        <p>Expertise em Monitoramento Solar</p>
+        <p>Monitoramento Solar</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -128,3 +128,4 @@ if submit:
 
 st.markdown("---")
 st.markdown(f"<p style='text-align: center; color: #7f8c8d;'>Nova Distrito - Especialistas em Energia Solar © 2026</p>", unsafe_allow_html=True)
+
