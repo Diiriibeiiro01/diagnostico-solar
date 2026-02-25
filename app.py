@@ -1,7 +1,7 @@
 import streamlit as st
 import urllib.parse
 
-# --- CONFIGURAÇÕES FIXAS (DEFINIDAS PELO MATEUS) ---
+# --- CONFIGURAÇÕES FIXAS (DEFINIDAS POR MATEUS) ---
 NOME_EMPRESA = "Nova Distrito"
 TARIFA_FIXA = 0.95  
 META_KWH_POR_PLACA = 70 
@@ -98,23 +98,23 @@ if st.button("CALCULAR DESEMPENHO", type="primary", use_container_width=True):
 
         if eficiencia >= 90:
             status = "✅ EXCELENTE"
-            st.success(f"**{status}**\n\nOlá {nome_cliente}, a sua usina está a produzir exatamente como esperado!")
+            st.success(f"**{status}**\n\nOlá {nome_cliente}, a sua usina está produzindo exatamente como esperado!")
         elif eficiencia >= 80:
             status = "🚨 ALERTA (Sujeira/Clima)"
             st.warning(f"**{status}**\n\nA sua usina perdeu {(100-eficiencia):.1f}% de eficiência. Sugerimos uma limpeza nos painéis.")
         else:
             status = "💀 CRÍTICO (Falha Técnica)"
-            st.error(f"**{status}**\n\nAtenção! Perda superior a 20%. Verifique o inversor ou contacte o suporte.")
+            st.error(f"**{status}**\n\nAtenção! Perda superior a 20%. Verifique o inversor ou contate o suporte.")
 
         # --- BOTÃO WHATSAPP ---
-        msg = f"Olá Mateus! Sou {nome_cliente} e acabei de analisar a minha usina no site da {NOME_EMPRESA}.\n\n📊 *Resultado:*\n- Eficiência: {eficiencia:.1f}%\n- Perda Estimada: R$ {perda_rs:.2f}\n- Status: {status}"
+        msg = f"Olá! Sou {nome_cliente} e acabei de analisar a minha usina no site da {NOME_EMPRESA}.\n\n📊 *Resultado:*\n- Eficiência: {eficiencia:.1f}%\n- Perda Estimada: R$ {perda_rs:.2f}\n- Status: {status}"
         url = f"https://wa.me/{TELEFONE_SUPORTE}?text={urllib.parse.quote(msg)}"
         
         st.markdown(f'''
             <br>
             <a href="{url}" target="_blank" style="text-decoration: none;">
                 <div style="background-color:#f5a623; color:white; padding:15px; border-radius:8px; text-align:center; font-weight:bold; font-size:16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    💬 ENVIAR RESULTADO PARA O MATEUS
+                    💬 ENVIAR RESULTADO PARA O SUPORTE TÉCNICO
                 </div>
             </a>
         ''', unsafe_allow_html=True)
