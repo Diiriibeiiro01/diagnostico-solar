@@ -1,39 +1,79 @@
 import streamlit as st
 import urllib.parse
 
-# --- CONFIGURAÇÕES FIXAS (O CLIENTE NÃO MEXE) ---
-TARIFA_FIXA = 0.95  # Altere aqui o valor oficial da sua região
+# --- CONFIGURAÇÕES FIXAS ---
+TARIFA_FIXA = 0.95  
 META_KWH_POR_PLACA = 70 
+TELEFONE_SUPORTE = "5561982579348" # Número do Mateus
 
-st.set_page_config(page_title="Distrito Solar - Diagnóstico", page_icon="☀️")
+# Configuração inicial da página (esconde barras laterais por padrão)
+st.set_page_config(page_title="Nova Distrito Solar", page_icon="☀️", layout="centered", initial_sidebar_state="collapsed")
 
-# --- ESTILO VISUAL ---
-st.markdown(f"""
+# --- ESTILO VISUAL (CSS AVANÇADO) ---
+st.markdown("""
     <style>
-    .stApp {{ background-color: #f4f7f6; }}
-    .status-box {{ padding: 20px; border-radius: 10px; color: white; font-weight: bold; margin-bottom: 20px; }}
+    /* Cor de fundo suave */
+    .stApp { background-color: #f4f7f6; }
+    
+    /* Cabeçalho Azul Escuro Personalizado */
+    .cabecalho-custom {
+        background-color: #1e354e;
+        padding: 2rem;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .cabecalho-custom h1 {
+        color: white;
+        margin: 0;
+        font-family: 'Arial', sans-serif;
+        font-size: 2.2rem;
+    }
+    .cabecalho-custom p {
+        color: #ffaa00; /* Laranja/Amarelo Solar */
+        margin: 5px 0 0 0;
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+    
+    /* Ajuste no visual das métricas */
+    div[data-testid="metric-container"] {
+        background-color: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("☀️ Calculadora de Performance Distrito Solar")
-st.info(f"ℹ️ Parâmetros Oficiais: Tarifa base R$ {TARIFA_FIXA:.2f}/kWh | Meta: {META_KWH_POR_PLACA}kWh mês/placa")
+# --- CABEÇALHO ---
+st.markdown("""
+    <div class="cabecalho-custom">
+        <h1>☀️ Nova Distrito Solar</h1>
+        <p>Diagnóstico de Performance Solar</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.info(f"⚡ **Parâmetros Oficiais:** Tarifa R$ {TARIFA_FIXA:.2f}/kWh | Meta: {META_KWH_POR_PLACA}kWh mês/placa")
 
 # --- ENTRADA DE DADOS DO CLIENTE ---
-with st.container():
-    st.subheader("📝 Dados da sua Usina")
-    nome = st.text_input("Seu Nome ou Nome da Usina")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        modulos = st.number_input("Qtd de Placas", min_value=1, step=1, help="Número total de painéis instalados.")
-    with col2:
-        dias = st.number_input("Dias de Uso", min_value=1, value=30, help="Período que você está analisando.")
-    with col3:
-        geracao_real = st.number_input("Geração no Inversor (kWh)", min_value=0.0)
+st.markdown("### 📝 Dados da Usina")
+nome_cliente = st.text_input("Seu Nome ou Nome da Usina", placeholder="Ex: João da Silva")
 
-if st.button("CALCULAR DESEMPENHO"):
-    if not nome:
-        st.warning("Por favor, digite o seu nome para o relatório.")
+col1, col2, col3 = st.columns(3)
+with col1:
+    modulos = st.number_input("Qtd de Placas", min_value=1, step=1)
+with col2:
+    dias = st.number_input("Dias de Uso", min_value=1, value=30)
+with col3:
+    geracao_real = st.number_input("Geração (kWh)", min_value=0.0, step=10.0)
+
+st.write("") # Espaço em branco
+
+if st.button("CALCULAR DESEMPENHO", type="primary", use_container_width=True):
+    if not nome_cliente:
+        st.warning("Por favor, digite o seu nome para gerar o relatório.")
     else:
         # --- CÁLCULO BLINDADO ---
         meta_periodo = (META_KWH_POR_PLACA / 30) * modulos * dias
@@ -41,6 +81,7 @@ if st.button("CALCULAR DESEMPENHO"):
         perda_rs = max(0, meta_periodo - geracao_real) * TARIFA_FIXA
 
         st.markdown("---")
+        st.markdown("### 📊 Resultado do Diagnóstico")
         
         # --- EXIBIÇÃO DE RESULTADOS ---
         c1, c2, c3 = st.columns(3)
@@ -50,21 +91,27 @@ if st.button("CALCULAR DESEMPENHO"):
 
         # --- DIAGNÓSTICO AUTOMÁTICO ---
         if eficiencia >= 90:
-            st.success(f"### Status: ✅ EXCELENTE\nSua usina está operando perfeitamente, {nome}!")
+            status = "✅ EXCELENTE"
+            st.success(f"**{status}**\n\nSua usina está operando perfeitamente, {nome_cliente}!")
         elif eficiencia >= 80:
-            st.warning(f"### Status: 🚨 ALERTA (Sujeira ou Tempo)\nSua usina perdeu {(100-eficiencia):.1f}% de eficiência. Recomendamos uma limpeza nos painéis.")
+            status = "🚨 ALERTA (Sujeira/Clima)"
+            st.warning(f"**{status}**\n\nSua usina perdeu {(100-eficiencia):.1f}% de eficiência. Recomendamos agendar uma limpeza.")
         else:
-            st.error(f"### Status: 💀 CRÍTICO (Falha Técnica)\nAtenção! Perda grave detectada. Pode haver falha no inversor ou disjuntor desligado.")
+            status = "💀 CRÍTICO (Falha Técnica)"
+            st.error(f"**{status}**\n\nAtenção {nome_cliente}! Perda grave detectada. Pode haver falha no inversor ou sistema. Suporte necessário.")
 
         # --- BOTÃO WHATSAPP ---
-        msg = f"Olá! Fiz o diagnóstico da usina {nome}:\n- Eficiência: {eficiencia:.1f}%\n- Perda: R$ {perda_rs:.2f}\n- Status: {status if 'status' in locals() else ''}"
-        url = f"https://wa.me/5561982579348?text={urllib.parse.quote(msg)}" # COLOQUE SEU NUMERO AQUI
+        msg = f"Olá, Mateus! Sou {nome_cliente} e acabei de usar o site da Nova Distrito Solar.\n\n📊 *Meu Diagnóstico:*\n- Eficiência: {eficiencia:.1f}%\n- Perda Estimada: R$ {perda_rs:.2f}\n- Status: {status}\n\nPoderia me ajudar?"
+        url = f"https://wa.me/{TELEFONE_SUPORTE}?text={urllib.parse.quote(msg)}"
         
         st.markdown(f'''
-            <a href="{url}" target="_blank">
-                <button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">
-                    💬 ENVIAR RESULTADO PARA SUPORTE TÉCNICO
-                </button>
+            <br>
+            <a href="{url}" target="_blank" style="text-decoration: none;">
+                <div style="background-color:#f5a623; color:white; padding:15px; border-radius:8px; text-align:center; font-weight:bold; font-size:16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    💬 ENVIAR RESULTADO PARA O SUPORTE (MATEUS)
+                </div>
             </a>
         ''', unsafe_allow_html=True)
 
+st.markdown("---")
+st.markdown("<p style='text-align: center; color: gray; font-size: 12px;'>© 2026 Nova Distrito Solar - Todos os direitos reservados.</p>", unsafe_allow_html=True)
