@@ -1,123 +1,130 @@
 import streamlit as st
 import urllib.parse
 
-# --- CONFIGURAÇÕES FIXAS (DEFINIDAS POR MATEUS) ---
+# --- CONFIGURAÇÕES FIXAS (BY MATEUS - NOVA DISTRITO) ---
 NOME_EMPRESA = "Nova Distrito"
 TARIFA_FIXA = 0.95  
 META_KWH_POR_PLACA = 70 
 TELEFONE_SUPORTE = "5561982579348"
 
-# Configuração da página e forçar tema claro via código
 st.set_page_config(page_title=NOME_EMPRESA, page_icon="☀️", layout="centered")
 
-# --- ESTILO VISUAL (FORÇANDO MODO CLARO E CORES DA MARCA) ---
+# --- ESTILO CSS PROFISSIONAL ---
 st.markdown("""
     <style>
-    /* Forçar cores de texto e fundo para evitar erro no modo escuro */
+    /* Fundo e Fonte */
     html, body, [data-testid="stAppViewContainer"] {
-        background-color: #f4f7f6 !important;
+        background-color: #f8fafd !important;
         color: #1e354e !important;
     }
     
-    /* Cabeçalho Elegante */
-    .cabecalho-custom {
-        background-color: #1e354e;
-        padding: 2rem;
-        border-radius: 10px;
+    /* Cabeçalho Premium */
+    .header-container {
+        background: linear-gradient(135deg, #1e354e 0%, #2c4e70 100%);
+        padding: 3rem 1rem;
+        border-radius: 15px;
         text-align: center;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
-    .cabecalho-custom h1 {
-        color: white !important;
-        margin: 0;
-        font-family: 'Arial', sans-serif;
-        font-size: 2.2rem;
-    }
-    .cabecalho-custom p {
-        color: #ffaa00 !important;
-        margin: 5px 0 0 0;
-        font-size: 1.1rem;
-        font-weight: bold;
-    }
+    .header-container h1 { color: white !important; font-size: 2.5rem !important; margin-bottom: 0; }
+    .header-container p { color: #ffaa00 !important; font-size: 1.2rem; font-weight: 500; }
 
-    /* Estilo dos inputs para garantir visibilidade */
-    input { color: #1e354e !important; }
-    label { color: #1e354e !important; font-weight: bold !important; }
-
-    /* Cartões de métricas */
-    div[data-testid="metric-container"] {
+    /* Card de Input */
+    .input-card {
         background-color: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        border: 1px solid #e0e0e0;
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid #e1e8ed;
+        margin-bottom: 20px;
     }
+
+    /* Estilização de Métricas */
+    div[data-testid="stMetricValue"] { font-size: 1.8rem !important; font-weight: 700 !important; }
+    
+    /* Botão Principal */
+    .stButton>button {
+        background-color: #1e354e !important;
+        color: white !important;
+        border-radius: 8px !important;
+        height: 3em !important;
+        font-weight: bold !important;
+        transition: 0.3s;
+    }
+    .stButton>button:hover { background-color: #ffaa00 !important; color: #1e354e !important; border: none; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CABEÇALHO ---
+# --- HEADER ---
 st.markdown(f"""
-    <div class="cabecalho-custom">
-        <h1>☀️ {NOME_EMPRESA}</h1>
-        <p>Diagnóstico de Performance Solar</p>
+    <div class="header-container">
+        <h1>Nova Distrito</h1>
+        <p>Expertise em Monitoramento Solar</p>
     </div>
     """, unsafe_allow_html=True)
 
-st.info(f"⚡ **Parâmetros Oficiais:** Tarifa R$ {TARIFA_FIXA:.2f}/kWh | Meta: {META_KWH_POR_PLACA}kWh mês/placa")
+# --- CORPO DO SITE ---
+with st.container():
+    st.markdown("### 📊 Análise de Performance")
+    st.info(f"Configuração: Tarifa R$ {TARIFA_FIXA:.2f} | Meta: {META_KWH_POR_PLACA}kWh")
 
-# --- ENTRADA DE DADOS ---
-st.markdown("### 📝 Dados da Usina")
-nome_cliente = st.text_input("Nome do Cliente ou Usina", placeholder="Ex: Residência Mateus")
+    # Card de Dados
+    with st.form("meu_formulario"):
+        nome_cliente = st.text_input("Identificação (Nome ou Unidade)", placeholder="Ex: Residência Mateus")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            modulos = st.number_input("Nº de Placas", min_value=1, step=1)
+        with col2:
+            dias = st.number_input("Dias de Análise", min_value=1, value=30)
+        with col3:
+            geracao_real = st.number_input("Geração (kWh)", min_value=0.0)
+            
+        submit = st.form_submit_button("GERAR DIAGNÓSTICO TÉCNICO")
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    modulos = st.number_input("Qtd de Placas", min_value=1, step=1)
-with col2:
-    dias = st.number_input("Dias de Uso", min_value=1, value=30)
-with col3:
-    geracao_real = st.number_input("Geração (kWh)", min_value=0.0, step=10.0)
-
-st.write("") 
-
-if st.button("CALCULAR DESEMPENHO", type="primary", use_container_width=True):
+if submit:
     if not nome_cliente:
-        st.warning("Por favor, introduza o nome para o relatório.")
+        st.error("⚠️ Identifique a unidade para continuar.")
     else:
+        # Cálculos
         meta_periodo = (META_KWH_POR_PLACA / 30) * modulos * dias
         eficiencia = (geracao_real / meta_periodo) * 100 if meta_periodo > 0 else 0
         perda_rs = max(0, meta_periodo - geracao_real) * TARIFA_FIXA
 
-        st.markdown("---")
-        st.markdown("### 📊 Resultado do Diagnóstico")
+        st.subheader(f"📋 Relatório de {nome_cliente}")
         
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Eficiência", f"{eficiencia:.1f}%")
-        c2.metric("Meta Esperada", f"{meta_periodo:.1f} kWh")
-        c3.metric("Economia Perdida", f"R$ {perda_rs:.2f}")
+        # Grid de Métricas
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Eficiência Real", f"{eficiencia:.1f}%")
+        m2.metric("Meta do Período", f"{meta_periodo:.1f} kWh")
+        m3.metric("Perda Financeira", f"R$ {perda_rs:.2f}", delta=f"-{perda_rs:.2f}" if perda_rs > 0 else None, delta_color="inverse")
 
+        # Barra de Progresso Visual
+        st.progress(min(eficiencia/100, 1.0))
+
+        # Box de Diagnóstico
         if eficiencia >= 90:
             status = "✅ EXCELENTE"
-            st.success(f"**{status}**\n\nOlá {nome_cliente}, a sua usina está produzindo exatamente como esperado!")
+            st.success(f"**Status: {status}** \nSistema operando com alta performance. Parabéns!")
         elif eficiencia >= 80:
-            status = "🚨 ALERTA (Sujeira/Clima)"
-            st.warning(f"**{status}**\n\nA sua usina perdeu {(100-eficiencia):.1f}% de eficiência. Sugerimos uma limpeza nos painéis.")
+            status = "🚨 ALERTA"
+            st.warning(f"**Status: {status}** \nDesvio de performance detectado ({(100-eficiencia):.1f}%). Sugerimos manutenção preventiva/limpeza.")
         else:
-            status = "💀 CRÍTICO (Falha Técnica)"
-            st.error(f"**{status}**\n\nAtenção! Perda superior a 20%. Verifique o inversor ou contate o suporte.")
+            status = "💀 CRÍTICO"
+            st.error(f"**Status: {status}** \nPerda grave detectada! Possível falha técnica no inversor ou strings.")
 
-        # --- BOTÃO WHATSAPP ---
-        msg = f"Olá! Sou {nome_cliente} e acabei de analisar a minha usina no site da {NOME_EMPRESA}.\n\n📊 *Resultado:*\n- Eficiência: {eficiencia:.1f}%\n- Perda Estimada: R$ {perda_rs:.2f}\n- Status: {status}"
+        # Botão WhatsApp Suporte
+        msg = f"Olá! Sou {nome_cliente} e acabei de analisar minha usina na Nova Distrito.\n\n📈 *Diagnóstico:*\n- Eficiência: {eficiencia:.1f}%\n- Perda: R$ {perda_rs:.2f}\n- Status: {status}"
         url = f"https://wa.me/{TELEFONE_SUPORTE}?text={urllib.parse.quote(msg)}"
         
         st.markdown(f'''
             <br>
             <a href="{url}" target="_blank" style="text-decoration: none;">
-                <div style="background-color:#f5a623; color:white; padding:15px; border-radius:8px; text-align:center; font-weight:bold; font-size:16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    💬 ENVIAR RESULTADO PARA O SUPORTE TÉCNICO
+                <div style="background-color:#ffaa00; color:#1e354e; padding:18px; border-radius:10px; text-align:center; font-weight:bold; font-size:18px; box-shadow: 0 4px 15px rgba(255,170,0,0.3); border: 2px solid #1e354e;">
+                    💬 ACIONAR SUPORTE TÉCNICO AGORA
                 </div>
             </a>
         ''', unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown(f"<p style='text-align: center; color: gray; font-size: 12px;'>© 2026 {NOME_EMPRESA} - Todos os direitos reservados.</p>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center; color: #7f8c8d;'>Nova Distrito - Especialistas em Energia Solar © 2026</p>", unsafe_allow_html=True)
