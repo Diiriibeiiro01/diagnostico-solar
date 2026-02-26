@@ -2,7 +2,7 @@ import streamlit as st
 import urllib.parse
 import random
 
-# --- CONFIGURAÇÕES FIXAS (BY MATEUS - NOVA DISTRITO) ---
+# --- CONFIGURAÇÕES FIXAS (NOVA DISTRITO) ---
 NOME_EMPRESA = "Nova Distrito"
 SUBTITULO = "Monitoramento Solar"
 TARIFA_FIXA = 0.95  
@@ -11,89 +11,110 @@ TELEFONE_SUPORTE = "5561982579348"
 
 st.set_page_config(page_title=NOME_EMPRESA, layout="centered")
 
-# --- ESTILO CSS ---
+# --- ESTILO CSS MODERNO E CLEAN ---
 st.markdown("""
     <style>
+    /* Reset e Fundo */
     html, body, [data-testid="stAppViewContainer"] {
-        background-color: #f4f7f6 !important;
-        color: #1e354e !important;
+        background-color: #fcfcfc !important;
+        color: #2c3e50 !important;
+        font-family: 'Inter', sans-serif;
     }
-    .header-box {
-        background-color: #1e354e;
-        padding: 3rem 1rem;
+
+    /* Cabeçalho Minimalista */
+    .header-main {
+        background-color: #1a2a3a;
+        padding: 40px 10px;
         text-align: center;
-        margin-bottom: 2rem;
-        border-bottom: 4px solid #ffaa00;
+        border-radius: 4px;
+        margin-bottom: 30px;
     }
-    .header-box h1 { color: white !important; font-size: 2.8rem !important; margin: 0; font-weight: 800; }
-    .header-box p { color: #ffaa00 !important; font-size: 1.1rem; margin-top: 5px; font-weight: 600; }
+    .header-main h1 {
+        color: #ffffff !important;
+        font-size: 2.5rem !important;
+        font-weight: 700 !important;
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+    .header-main p {
+        color: #f39c12 !important;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
+    /* Card de Conteúdo */
+    .stForm {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        border: 1px solid #edf2f7;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+
+    /* Botão Principal Estilo Apple/SaaS */
     .stButton>button {
-        background-color: #1e354e !important;
-        color: white !important;
-        border-radius: 4px !important;
-        height: 3em !important;
-        font-weight: bold !important;
+        background-color: #1a2a3a !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 12px 24px !important;
+        font-weight: 600 !important;
         width: 100%;
+        height: 50px;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #2c3e50 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Alertas Personalizados sem Emojis */
+    .stAlert {
+        border-radius: 6px !important;
+        border: none !important;
+        background-color: #f8f9fa !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown(f'<div class="header-box"><h1>{NOME_EMPRESA}</h1><p>{SUBTITULO}</p></div>', unsafe_allow_html=True)
+# --- HEADER ---
+st.markdown(f"""
+    <div class="header-main">
+        <h1>{NOME_EMPRESA}</h1>
+        <p>{SUBTITULO}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-nome_cliente = st.text_input("Identificação da Unidade", placeholder="Nome do cliente")
-col1, col2, col3 = st.columns(3)
-with col1: modulos = st.number_input("Número de Placas", min_value=1, step=1)
-with col2: dias = st.number_input("Período (Dias)", min_value=1, value=30)
-with col3: geracao_real = st.number_input("Geração Real (kWh)", min_value=0.0)
+# --- FORMULÁRIO DE ENTRADA ---
+with st.form("analise_form"):
+    st.markdown("### Analisar Unidade")
+    nome_cliente = st.text_input("Identificação", placeholder="Digite o nome da unidade")
+    
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        modulos = st.number_input("Painéis", min_value=1, step=1)
+    with c2:
+        dias = st.number_input("Período (Dias)", min_value=1, value=30)
+    with c3:
+        geracao_real = st.number_input("Geração (kWh)", min_value=0.0)
+    
+    calcular = st.form_submit_button("GERAR RELATÓRIO")
 
-if st.button("GERAR RELATÓRIO TÉCNICO"):
+# --- PROCESSAMENTO E RESULTADO ---
+if calcular:
     if not nome_cliente:
-        st.error("Identifique a unidade antes de prosseguir.")
+        st.error("Identificação obrigatória.")
     else:
-        meta_periodo = (META_KWH_POR_PLACA / 30) * modulos * dias
-        eficiencia = (geracao_real / meta_periodo) * 100 if meta_periodo > 0 else 0
-        perda_rs = max(0, meta_periodo - geracao_real) * TARIFA_FIXA
-        protocolo = random.randint(1000, 9999)
+        meta = (META_KWH_POR_PLACA / 30) * modulos * dias
+        eficiencia = (geracao_real / meta) * 100 if meta > 0 else 0
+        perda_financeira = max(0, meta - geracao_real) * TARIFA_FIXA
+        protocolo = random.randint(10000, 99999)
 
         st.markdown("---")
-        st.markdown(f"### Resultado: {nome_cliente}")
-        
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Eficiência", f"{eficiencia:.1f}%")
-        m2.metric("Meta", f"{meta_periodo:.1f} kWh")
-        m3.metric("Perda", f"R$ {perda_rs:.2f}")
+        st.markdown(f"### Resultado Técnico: {nome_cliente}")
+        st.markdown(f"**Protocolo de Atendimento:** {protocolo}")
 
-        if eficiencia >= 90: status_whats = "✅ EXCELENTE"; st.success(f"Status: {status_whats}")
-        elif eficiencia >= 80: status_whats = "🚨 ALERTA"; st.warning(f"Status: {status_whats}")
-        else: status_whats = "💀 CRÍTICO"; st.error(f"Status: {status_whats}")
-
-        # --- MENSAGEM DO WHATSAPP APRIMORADA ---
-        # Note o uso de asteriscos para negrito e quebras de linha para organização
-        msg = (
-            f"*NOVA DISTRITO - SUPORTE TÉCNICO*\n"
-            f"------------------------------------------\n"
-            f"*Protocolo:* #{protocolo}\n"
-            f"*Unidade:* {nome_cliente}\n\n"
-            f"*DADOS DO DIAGNÓSTICO:*\n"
-            f"• Eficiência Real: {eficiencia:.1f}%\n"
-            f"• Geração Real: {geracao_real} kWh\n"
-            f"• Meta Esperada: {meta_periodo:.1f} kWh\n"
-            f"• Perda Estimada: R$ {perda_rs:.2f}\n\n"
-            f"*STATUS:* {status_whats}\n"
-            f"------------------------------------------\n"
-            f"Olá, Mateus! Gostaria de solicitar o suporte de monitoramento para esta usina."
-        )
-        
-        url = f"https://wa.me/{TELEFONE_SUPORTE}?text={urllib.parse.quote(msg)}"
-        
-        st.markdown(f'''
-            <br>
-            <a href="{url}" target="_blank" style="text-decoration: none;">
-                <div style="background-color:#ffaa00; color:#1e354e; padding:18px; border-radius:4px; text-align:center; font-weight:bold; font-size:1.1rem; border: 1px solid #1e354e;">
-                    ACIONAR SUPORTE TÉCNICO
-                </div>
-            </a>
-        ''', unsafe_allow_html=True)
-
-st.markdown("---")
-st.markdown(f"<p style='text-align: center; color: #7f8c8d; font-size: 0.8rem;'>{NOME_EMPRESA} - Todos os direitos reservados © 2026</p>", unsafe_allow_html=True)
+        r1, r2, r3 = st.columns(3)
