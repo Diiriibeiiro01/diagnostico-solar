@@ -11,7 +11,7 @@ TELEFONE_SUPORTE = "5561982579348"
 
 # COLOQUE O LINK DA SUA LOGO AQUI (Ex: link do GitHub ou Imgur)
 # Se não tiver link, o código usará o texto atual.
-URL_LOGO = "https://sua-url-da-logo.png" 
+URL_LOGO = "https://github.com/Diiriibeiiro01/diagnostico-solar/blob/main/logo.png?raw=true" 
 
 st.set_page_config(page_title=NOME_EMPRESA, layout="centered")
 
@@ -138,3 +138,4 @@ if st.button("ANALISAR PERFORMANCE"):
 
 st.markdown("---")
 st.markdown(f"<p style='text-align: center; opacity: 0.6;'>{NOME_EMPRESA} - Todos os direitos reservados © 2026</p>", unsafe_allow_html=True)
+
