@@ -84,32 +84,36 @@ if st.button("ANALISAR PERFORMANCE"):
         res2.metric("Meta", f"{meta_periodo:.1f} kWh")
         res3.metric("Perda", f"R$ {perda_rs:.2f}")
 
-        # --- LÓGICA DE MENSAGEM DINÂMICA ---
+        # --- LÓGICA DE STATUS E MENSAGEM ---
         if eficiencia >= 90:
             status_txt = "EXCELENTE"
             st.info(f"STATUS: {status_txt} - Sistema operando em alta performance.")
-            texto_personalizado = "Minha usina está com ótimo desempenho, mas gostaria de manter o acompanhamento preventivo da Nova Distrito."
+            chamada_acao = "Minha usina está com ótimo desempenho, mas gostaria de manter o acompanhamento preventivo da Nova Distrito."
         
         elif eficiencia >= 80:
             status_txt = "ALERTA"
             st.warning(f"STATUS: {status_txt} - Performance abaixo do esperado.")
-            texto_personalizado = f"Minha usina apresentou um alerta de performance ({eficiencia:.1f}%). Preciso de uma avaliação para identificar se é sujeira ou sombreamento."
+            chamada_acao = f"Minha usina apresentou um alerta de performance. Preciso de uma avaliação técnica."
         
         else:
             status_txt = "CRÍTICO"
             st.error(f"STATUS: {status_txt} - Perda severa detectada.")
-            texto_personalizado = f"URGENTE: Minha usina está com desempenho CRÍTICO ({eficiencia:.1f}%). Preciso de suporte técnico imediato para verificar possíveis falhas."
+            chamada_acao = f"URGENTE: Minha usina está com desempenho crítico. Preciso de suporte imediato!"
 
-        # Montagem da mensagem final
+        # --- MONTAGEM DA MENSAGEM COM NEGRITO (WhatsApp utiliza asteriscos para bold) ---
         msg = (
-            f"DIAGNÓSTICO NOVA DISTRITO\n"
-            f"Protocolo: {protocolo}\n"
-            f"Unidade: {nome_cliente}\n\n"
-            f"DADOS TÉCNICOS:\n"
-            f"- Eficiência: {eficiencia:.1f}%\n"
-            f"- Perda: R$ {perda_rs:.2f}\n"
-            f"- Status: {status_txt}\n\n"
-            f"{texto_personalizado}"
+            f"*DIAGNÓSTICO NOVA DISTRITO*\n"
+            f"------------------------------------------\n"
+            f"*Protocolo:* #{protocolo}\n"
+            f"*Unidade:* {nome_cliente}\n\n"
+            f"*DADOS TÉCNICOS:*\n"
+            f"• Eficiência Real: *{eficiencia:.1f}%*\n"
+            f"• Geração Informada: *{geracao_real} kWh*\n"
+            f"• Meta Esperada: *{meta_periodo:.1f} kWh*\n"
+            f"• Perda Financeira: *R$ {perda_rs:.2f}*\n\n"
+            f"*STATUS:* {status_txt}\n"
+            f"------------------------------------------\n"
+            f"{chamada_acao}"
         )
         
         link_wa = f"https://wa.me/{TELEFONE_SUPORTE}?text={urllib.parse.quote(msg)}"
