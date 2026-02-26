@@ -9,11 +9,23 @@ TARIFA_FIXA = 0.95
 META_KWH_POR_PLACA = 70 
 TELEFONE_SUPORTE = "5561982579348"
 
+# COLOQUE O LINK DA SUA LOGO AQUI (Ex: link do GitHub ou Imgur)
+# Se não tiver link, o código usará o texto atual.
+URL_LOGO = "https://sua-url-da-logo.png" 
+
 st.set_page_config(page_title=NOME_EMPRESA, layout="centered")
 
 # --- ESTILO CSS ---
 st.markdown("""
     <style>
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    .logo-img {
+        max-width: 200px; /* Ajuste o tamanho da logo aqui */
+    }
     .main-title {
         background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
         -webkit-background-clip: text;
@@ -50,11 +62,15 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# --- EXIBIÇÃO DA LOGO E TÍTULO ---
+# Se você tiver a URL da logo, ela aparecerá aqui
+if URL_LOGO != "https://sua-url-da-logo.png":
+    st.markdown(f'<div class="logo-container"><img src="{URL_LOGO}" class="logo-img"></div>', unsafe_allow_html=True)
+
 st.markdown(f'<h1 class="main-title">{NOME_EMPRESA}</h1>', unsafe_allow_html=True)
 st.markdown(f'<p class="sub-title">{SUBTITULO}</p>', unsafe_allow_html=True)
 
-# --- INPUTS ---
-st.markdown("### Diagnóstico Técnico")
+# --- O RESTANTE DO CÓDIGO CONTINUA IGUAL ---
 nome_cliente = st.text_input("Identificação da Unidade", placeholder="Ex: Residência Mateus")
 
 col1, col2, col3 = st.columns(3)
@@ -69,7 +85,6 @@ if st.button("ANALISAR PERFORMANCE"):
     if not nome_cliente:
         st.error("Por favor, preencha a identificação da unidade.")
     else:
-        # Cálculos
         meta_periodo = (META_KWH_POR_PLACA / 30) * modulos * dias
         eficiencia = (geracao_real / meta_periodo) * 100 if meta_periodo > 0 else 0
         perda_rs = max(0, meta_periodo - geracao_real) * TARIFA_FIXA
@@ -77,30 +92,25 @@ if st.button("ANALISAR PERFORMANCE"):
 
         st.markdown("---")
         st.markdown(f"### Resultado: {nome_cliente}")
-        st.write(f"Protocolo: {protocolo}")
-
+        
         res1, res2, res3 = st.columns(3)
         res1.metric("Eficiência", f"{eficiencia:.1f}%")
         res2.metric("Meta", f"{meta_periodo:.1f} kWh")
         res3.metric("Perda", f"R$ {perda_rs:.2f}")
 
-        # --- LÓGICA DE STATUS E MENSAGEM ---
         if eficiencia >= 90:
             status_txt = "EXCELENTE"
-            st.info(f"STATUS: {status_txt} - Sistema operando em alta performance.")
+            st.info(f"STATUS: {status_txt}")
             chamada_acao = "Minha usina está com ótimo desempenho, mas gostaria de manter o acompanhamento preventivo da Nova Distrito."
-        
         elif eficiencia >= 80:
             status_txt = "ALERTA"
-            st.warning(f"STATUS: {status_txt} - Performance abaixo do esperado.")
-            chamada_acao = f"Minha usina apresentou um alerta de performance. Preciso de uma avaliação técnica."
-        
+            st.warning(f"STATUS: {status_txt}")
+            chamada_acao = "Minha usina apresentou um alerta de performance. Preciso de uma avaliação técnica."
         else:
             status_txt = "CRÍTICO"
-            st.error(f"STATUS: {status_txt} - Perda severa detectada.")
-            chamada_acao = f"URGENTE: Minha usina está com desempenho crítico. Preciso de suporte imediato!"
+            st.error(f"STATUS: {status_txt}")
+            chamada_acao = "URGENTE: Minha usina está com desempenho crítico. Preciso de suporte imediato!"
 
-        # --- MONTAGEM DA MENSAGEM COM NEGRITO (WhatsApp utiliza asteriscos para bold) ---
         msg = (
             f"*DIAGNÓSTICO NOVA DISTRITO*\n"
             f"------------------------------------------\n"
